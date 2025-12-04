@@ -1,178 +1,112 @@
 # Final_Group_Assignment_ML4HC
 ICU Survival Modelling
-Kaplan Meier, Cox Proportional Hazards, and Machine Learning for Critical Care Decision Support
+Understanding short term mortality in critically ill patients through survival analysis and machine learning
 1. Project Overview
 
-This repository contains a complete survival modelling pipeline designed for one of the most important decisions in healthcare: estimating short term mortality risk for critically ill adults. Hospitals operate with finite ICU beds, overworked staff, and constant triage pressures. Predictive survival modelling can help clinicians decide who needs urgent escalation, who can be safely stepped down, and how survival evolves over the first days and weeks after admission.
+This project examines how critically ill patients progress during their hospital stay and which factors shape their chances of survival. The clinical motivation is very real: ICU beds are limited, clinicians must make rapid decisions, and early mortality risk is often unclear. By modelling survival, we can support triage, escalation, discharge planning, and conversations with families.
 
-We analyse the SUPPORT dataset of 9,105 high acuity hospital patients and build a structured modelling workflow. It progresses from descriptive survival curves to interpretable statistical models and finally to flexible machine learning classifiers. Each model answers a specific clinical question while following strict requirements on leakage control, fairness, calibration, reproducibility, and stakeholder communication.
-This README presents the ideas as clearly as possible so that clinicians, data scientists, and students can follow the reasoning behind every decision.
+We work with the SUPPORT dataset, which contains detailed information on 9,105 severely ill adults. The workflow mirrors how a clinician or data scientist would approach the problem. We begin with descriptive survival curves, move to interpretable statistical models, and then explore whether machine learning can improve short term predictions.
+
+The goal is straightforward: provide a transparent, end to end analysis that is both technically solid and useful in practice.
 
 2. Repository Structure
+Main Notebooks
 
-Primary Notebooks
-• 01_ICU_Survival_analysis_KM.ipynb
- Kaplan Meier curves, confidence intervals, restricted mean survival time, cumulative hazard, subgroup survival, and early clinical interpretation.
-• 02_ICU_Survival_analysis_CPH.ipynb
- Univariable and multivariable Cox models, hazard ratio interpretation, proportional hazards checks, personalised survival curves, and calibration.
-• 03_ICU_Survival_analysis_DT_RF.ipynb
- Thirty day mortality prediction with Decision Trees and Random Forests, preprocessing pipelines, grid searched hyperparameters, test set performance, and risk driver analysis.
+01_ICU_Survival_analysis_KM.ipynb
+Kaplan Meier curves, median survival, restricted mean survival time, cumulative hazard, subgroup comparisons, and early clinical interpretation.
 
-Additional Files
-• environment.yml for complete reproducibility.
-• utils.py (optional) for reusable functions.
-• Presentation.pdf for stakeholder communication and recommendations.
-• README.md for documentation.
+02_ICU_Survival_analysis_CPH.ipynb
+Univariable and multivariable Cox models, hazard ratio interpretation, proportional hazards checks, personalised survival curves, and calibration.
+
+03_ICU_Survival_analysis_DT_RF.ipynb
+Thirty day mortality modelling with Decision Trees and Random Forests, preprocessing pipelines, hyperparameter tuning, test set evaluation, and feature importance.
+
+Supporting Files
+
+• environment.yml for reproducible setup
+• utils.py for shared helper functions
+• Presentation.pdf for communicating insights to clinical stakeholders
+• README.md (this document)
 
 3. Installation and Environment
 
-The entire workflow is reproducible with a single environment file.
+Create the environment with:
 
 conda env create -f environment.yml
 conda activate icu_survival_env
 
 
-Major libraries include lifelines, scikit learn, scikit survival, pandas, numpy, and matplotlib.
-All versions are pinned to avoid non reproducible results.
+The environment includes numpy, pandas, scikit learn, lifelines, seaborn, matplotlib, and all required packages. Versions are pinned so the notebooks run consistently on any machine.
 
 4. Quickstart Guide
+Step 1. Load the dataset
 
-Run the notebooks in this order.
-
-Step 1. Load dataset and validate time variables
-
-We clean negative values, confirm that d.time and slos represent valid survival durations, and inspect event and censoring rates. These steps reflect the expected setup in the project guidelines 
-
-HL4HC_GroupAssignment_2_KM
-
-.
+We start by inspecting the survival variables, correcting invalid values, and confirming event and censoring definitions. This ensures all stages of the analysis are built on clean, reliable inputs.
 
 Step 2. Kaplan Meier analysis
 
-• Plot survival curves with confidence intervals.
-• Compute median survival and RMST to quantify early and late risk windows.
-• Use cumulative hazard to capture the steep rise in early mortality.
-• Compare survival across diagnosis and severity groups.
-• Produce clinical takeaways that connect survival patterns to ICU capacity needs.
+The KM notebook provides the first look at how survival evolves over time. The curves show a steep early decline, which aligns with what clinicians often observe. Subgroup curves reveal meaningful differences across disease categories. Restricted mean survival time and cumulative hazard clarify when risk is highest and when patients begin to stabilise.
 
 Step 3. Cox Proportional Hazards modelling
 
-• Remove leakage variables and restrict predictors to information available at admission.
-• Fit univariable and multivariable Cox models.
-• Interpret hazard ratios for clinical decision making.
-• Check proportional hazards assumptions using Schoenfeld residuals.
-• Evaluate model discrimination and calibration.
-• Generate personalised survival curves for representative patients.
-These steps follow Cox modelling requirements in the assignment instructions 
+The Cox model quantifies the effect of baseline variables on mortality. Only admission time predictors are included to prevent leakage. We interpret hazard ratios, check model assumptions, evaluate calibration, and generate personalised survival curves. This step adds structure and clarity to the patterns seen in the KM analysis.
 
-HL4HC_GroupAssignment_2_CPH
+Step 4. Decision Tree and Random Forest modelling
 
-.
+This part focuses on predicting thirty day mortality. We define a clean binary label, build preprocessing pipelines, tune both models, and evaluate their performance using AUROC and Brier score. The Random Forest performs best and highlights important predictive features. The Decision Tree offers a simplified, more interpretable alternative.
 
-Step 4. Fixed horizon Decision Tree and Random Forest
+5. Summary of the Dataset
 
-• Define the thirty day mortality label without accessing future data.
-• Build preprocessing pipelines with imputers, scalers, and one hot encoding.
-• Train Decision Tree and Random Forest models with grid searched hyperparameters.
-• Evaluate test set AUROC and Brier score.
-• Analyse permutation importance to identify dominant clinical drivers.
-This reflects the classification modelling expectations described in the instructions 
+The dataset includes patients with advanced conditions such as respiratory failure, heart failure, cirrhosis, coma, and malignancies. Baseline physiological values, comorbidities, demographics, and outcomes are all recorded.
 
-HL4HC_GroupAssignment_2_DT_RF
+Key observations:
+• In hospital mortality is roughly one in four
+• Thirty day mortality is slightly higher
+• A large portion of patients are discharged alive, creating substantial censoring
+• Survival and length of stay are heavily right skewed, with most events occurring early
 
-.
+These patterns guide the modelling choices in the notebooks.
 
-5. Dataset Summary
-
-The SUPPORT dataset includes high risk adult inpatients from five United States hospitals. It contains:
-• Demographics such as age, sex, and education.
-• Physiologic measures such as APS, scoma, creatinine, mean blood pressure, and temperature.
-• Diagnosis categories that represent major advanced diseases.
-• Length of stay, in hospital mortality status, overall survival time, and long term outcomes.
-
-The outcome structure reveals:
-• About 26 percent in hospital mortality.
-• About 27 percent thirty day mortality.
-• Heavy right censoring due to discharge alive.
-• Strong early risk concentration in the first days of admission.
-
-These patterns appear in the Kaplan Meier exploratory section (pages 7 to 12) 
-
-HL4HC_GroupAssignment_2_KM
-
-.
-
-6. Key Findings from Survival Analysis
+6. Main Results
 Kaplan Meier
 
-The Kaplan Meier curves show a steep early drop in survival, confirming that the highest risk window occurs shortly after admission. Subgroup curves reveal large differences across diseases such as coma, ARF and malignancies. Restricted mean survival time highlights actionable time points that align with ICU resource constraints.
-
-Cumulative hazard analysis confirms that risk accumulates rapidly early in the stay, then slows down as patients stabilise. These insights help determine when to intensify monitoring and when discharge becomes safer.
+Survival declines most sharply during the first days after admission. This early period is clinically important and aligns with real practice. Subgroup curves show that some diagnosis categories experience significantly worse outcomes. Cumulative hazard curves support the observation that early risk is concentrated.
 
 Cox Proportional Hazards
 
-The Cox model quantifies the independent contributions of baseline predictors. Key results include:
-• Higher APS and scoma scores significantly increase mortality hazard.
-• Diagnosis categories such as coma and cancer exhibit strong elevated risk.
-• Higher mean blood pressure reduces hazard, consistent with clinical physiology.
-• Age and comorbidities increase risk in a stable and interpretable way.
-
-The model passes proportional hazards checks for most predictors. Calibration curves and Brier scores support clinical deployment. The model also generates personalised survival curves that clinicians can use to communicate prognosis to families.
+The Cox model demonstrates that higher severity scores, specific diagnosis groups, lower blood pressure, older age, and multiple comorbidities all increase mortality risk. The model is reasonably well calibrated and passes most assumption checks. Personalised survival curves provide a practical way to visualise expected outcomes for specific patient profiles.
 
 Decision Tree and Random Forest
 
-The Random Forest model delivers the strongest predictive discrimination with AUROC near 0.744 on the held out test set. The Decision Tree provides a simpler representation with somewhat lower performance but more visibility into decision splits.
+For the thirty day task, the Random Forest achieves the strongest performance with an AUROC around 0.74. It identifies several consistent predictors such as temperature, creatinine, respiratory indicators, blood pressure, and severity scores. The Decision Tree is easier to interpret and can be useful when transparency is a priority.
 
-Permutation importance indicates that temperature, creatinine, respiratory indicators, blood pressure, and severity scores drive most of the risk signal.
+7. Evaluation Approach
 
-Both models respect horizon definitions and avoid leakage by limiting features to values available at admission.
-
-7. Evaluation Strategy
 Discrimination
-
-• Concordance index for Cox models.
-• AUROC for fixed horizon classifiers.
-• Average precision to reflect class imbalance.
+Concordance index for survival models and AUROC for classification models. Average precision is also reported to capture class imbalance.
 
 Calibration
+Calibration curves and Brier scores are used to check whether predicted probabilities match observed outcomes.
 
-• Reliability curves to detect over and under prediction.
-• Brier score computed on the test set.
-• Optional recalibration if required.
+Threshold selection
+Different thresholds are evaluated considering real ICU capacity constraints, helping translate model performance into practical decision policies.
 
-Threshold selection and decision analysis
+Subgroup checks
+Performance is compared across age, sex, and disease categories to identify any significant differences or fairness concerns.
 
-We study threshold changes under realistic capacity constraints. This analysis explains how clinicians might deploy the model in a real hospital setting that must balance missed detections with resource saturation.
+8. Clinical Perspective
 
-Fairness and subgroup performance
+Bringing all results together, the picture is consistent. Mortality risk is heavily concentrated early in the admission. Physiological severity and diagnosis type drive much of the variation in outcomes. Cox models provide clear, interpretable insights, while the machine learning models capture nonlinear patterns and interactions that traditional models cannot.
 
-All models are checked across sex, age ranges, and diagnosis classes. These checks follow the grading rubric that prioritises fairness and robustness of clinical models.
-
-8. Clinical Interpretation
-
-Bringing the findings together:
-
-• The first days of hospitalisation represent the most dangerous phase.
-• Diagnosis category and physiological severity dominate the risk landscape.
-• Cox models provide clear and interpretable effect sizes suitable for clinical guidelines.
-• Random Forest improves discrimination and reveals nonlinear interactions not captured by traditional statistical models.
-• Model predictions should always complement, not replace, clinical judgement.
-• ICU capacity planning benefits from quantifying early survival trajectories and identifying which groups require intensive resources.
-
-These conclusions are aligned with the decision context described in the Kaplan Meier notebook (pages 1 to 4) 
-
-HL4HC_GroupAssignment_2_KM
-
-.
+These tools can support clinicians as they prioritise care, allocate scarce resources, and communicate prognosis. They should complement clinical judgment rather than replace it.
 
 9. Future Extensions
 
-If this project were to be expanded, promising directions include:
-• Competing risks analysis to explicitly model discharge.
-• Time varying covariates that incorporate physiological changes during admission.
-• Gradient boosted survival models.
-• Deep neural survival models for richer pattern extraction.
-• Integration into a real world triage dashboard.
+Possible directions for further work include:
+• Modelling discharge as a competing risk
+• Incorporating time varying covariates
+• Exploring boosted or neural survival models
+• Building an interactive dashboard for real time clinical use
 
 10. Authors
 
